@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Super simple server for WebRTC demo",
   "main": "server.js",
-  "dependencies": {},
+  "dependencies": {
+    "@types/socket.io-client": "^1.4.29"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

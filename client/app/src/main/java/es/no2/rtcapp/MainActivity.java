@@ -1,12 +1,17 @@
 package es.no2.rtcapp;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +40,7 @@ import io.socket.emitter.Emitter;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String SIGNALING_URI = "http://your.ip.here:7000";
+    private static final String SIGNALING_URI = "http://192.168.0.13:5000";
     private static final String VIDEO_TRACK_ID = "video1";
     private static final String AUDIO_TRACK_ID = "audio1";
     private static final String LOCAL_STREAM_ID = "stream1";
@@ -54,12 +59,88 @@ public class MainActivity extends AppCompatActivity {
     private VideoRenderer otherPeerRenderer;
     private Socket socket;
     private boolean createOffer = false;
+    private GLSurfaceView videoView;
+    FrameLayout surfaceHolder;
+
+    private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+        surfaceHolder = (FrameLayout) findViewById(R.id.surface_holder);
+        requestPermission();
+
+
+    }
+
+    private void requestPermission(){
+
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+        else {
+            initWebRTC();
+        }
+
+    }
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    initWebRTC();
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+
+
+
+    private void initWebRTC(){
 
         AudioManager audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
@@ -88,7 +169,9 @@ public class MainActivity extends AppCompatActivity {
         localMediaStream.addTrack(localVideoTrack);
         localMediaStream.addTrack(localAudioTrack);
 
-        GLSurfaceView videoView = (GLSurfaceView) findViewById(R.id.glview_call);
+        videoView =  new GLSurfaceView(this);//findViewById(R.id.glview_call);
+
+        surfaceHolder.addView(videoView);
 
         VideoRendererGui.setView(videoView, null);
         try {
@@ -99,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
 
     public void onConnect(View button) {
         if (peerConnection != null)

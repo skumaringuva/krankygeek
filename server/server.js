@@ -1,9 +1,11 @@
-var socketIO = require('socket.io');
-var server = require('http').createServer().listen(7000, '0.0.0.0');
+var socketIO = require('/usr/local/lib/node_modules/socket.io');
+var server = require('http').createServer().listen(5000, '0.0.0.0');
 var io = socketIO.listen(server);
-
+//var io = require('/root/node_modules/socket.io/lib/socket.io'); 
+//var express = require('/usr/local/lib/node_modules/express/lib/express.js'‌​);
 // Super simple server:
 //  * One room only. 
+///usr/local/lib/node_modules/socket.io/lib
 //  * We expect two people max. 
 //  * No error handling.
 
